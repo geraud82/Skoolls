@@ -25,6 +25,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const testRoutes = require('./routes/testRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
+const receiptRoutes = require('./routes/receiptRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 // ✅ Utilisation des routes
@@ -40,6 +41,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/documents', documentRoutes); // Routes pour les documents d'inscription
 app.use('/api/test', testRoutes);
 app.use('/api/invoices', invoiceRoutes); // Routes pour les factures
+app.use('/api/receipts', receiptRoutes); // Routes pour les reçus
 app.use('/api/profile', profileRoutes); // Routes pour le profil utilisateur
 app.use('/api/admin', adminRoutes); // Routes pour l'administration
 

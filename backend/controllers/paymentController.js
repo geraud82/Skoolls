@@ -5,7 +5,7 @@ const {
   updatePaymentStatus,
   getPaymentByToken
 } = require('../models/paymentModel');
-const paydunyaService = require('../services/paydunyaService');
+const paydunyaService = require('../services/paydunyaServiceMock');
 const stripeService = require('../services/stripeService');
 const flutterwaveService = require('../services/flutterwaveService');
 const db = require('../config/db');
@@ -82,13 +82,16 @@ const payTuition = async (req, res) => {
           amount: parseFloat(amount),
           description: `Frais de scolarité pour ${enrollment.first_name} ${enrollment.last_name} - ${enrollment.class_name}`,
           callbackUrl: `${baseUrl}/api/payments/paydunya/callback`,
-          returnUrl: `${baseUrl}/payments/success?token=${encodeURIComponent(paydunyaRequest?.token || '')}`,
+          returnUrl: `${baseUrl}/payments/success`,
           cancelUrl: `${baseUrl}/payments/cancel`,
           customData: {
             enrollment_id: enrollment_id,
             user_id: user_id
           }
         });
+        
+        // Mettre à jour l'URL de retour avec le token
+        const returnUrlWithToken = `${baseUrl}/payments/success?token=${encodeURIComponent(paydunyaRequest?.token || '')}`;
         
         // Créer le paiement dans notre base de données
         const payment = await createPayment({ 
