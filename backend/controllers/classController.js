@@ -1,0 +1,94 @@
+const { createClass, getClassesBySchool, getClassById, getAllClasses } = require('../models/classModel');
+const db = require('../config/db');
+
+const getClassesBySchoolId = async (req, res) => {
+  const { schoolId } = req.params;
+  try {
+    const classes = await getClassesBySchool(schoolId);
+    res.json(classes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de la récupération des classes' });
+  }
+};
+
+const addClass = async (req, res) => {
+  const { name, tuition_fee } = req.body;
+  const school_id = req.user.id; // récupéré via JWT middleware
+  try {
+    const newClass = await createClass({ school_id, name, tuition_fee });
+    res.status(201).json(newClass);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de la création de la classe' });
+  }
+};
+
+const listClasses = async (req, res) => {
+  const school_id = req.user.id;
+  try {
+    const classes = await getClassesBySchool(school_id);
+    res.json(classes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de la récupération des classes' });
+  }
+};
+
+const getClass = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const classObj = await getClassById(id);
+    if (!classObj) {
+      return res.status(404).json({ message: 'Classe non trouvée' });
+    }
+    res.json(classObj);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de la récupération de la classe' });
+  }
+};
+
+const listAllClasses = async (req, res) => {
+  try {
+    const classes = await getAllClasses();
+    res.json(classes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de la récupération des classes' });
+  }
+};
+const deleteClass = async (req, res) => {
+  const classId = req.params.id;
+
+  try {
+    await db.query('DELETE FROM classes WHERE id = $1', [classId]);
+    res.status(200).json({ message: 'Classe supprimée.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+const updateClass = async (req, res) => {
+  const classId = req.params.id;
+  const { name, tuition_fee } = req.body;
+
+  try {
+    const result = await db.query(
+      'UPDATE classes SET name = $1, tuition_fee = $2 WHERE id = $3 RETURNING *',
+      [name, tuition_fee, classId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Classe non trouvée.' });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+module.exports = { addClass, listClasses, getClass, listAllClasses, deleteClass, updateClass, getClassesBySchoolId };
