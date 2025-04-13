@@ -101,7 +101,18 @@ const updateProfilePicture = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, email, currentPassword, newPassword } = req.body;
+    const { 
+      name, 
+      email, 
+      currentPassword, 
+      newPassword,
+      phone,
+      address,
+      whatsapp,
+      telegram,
+      facebook,
+      preferred_contact_method
+    } = req.body;
     
     // Vérifier si l'utilisateur existe
     const user = await findUserById(userId);
@@ -117,6 +128,14 @@ const updateProfile = async (req, res) => {
     
     // Mettre à jour l'email si fourni
     if (email) updateData.email = email;
+    
+    // Mettre à jour les informations de contact si fournies
+    if (phone !== undefined) updateData.phone = phone;
+    if (address !== undefined) updateData.address = address;
+    if (whatsapp !== undefined) updateData.whatsapp = whatsapp;
+    if (telegram !== undefined) updateData.telegram = telegram;
+    if (facebook !== undefined) updateData.facebook = facebook;
+    if (preferred_contact_method !== undefined) updateData.preferred_contact_method = preferred_contact_method;
     
     // Mettre à jour le mot de passe si fourni
     if (currentPassword && newPassword) {

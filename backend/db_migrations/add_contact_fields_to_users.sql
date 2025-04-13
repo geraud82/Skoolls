@@ -1,0 +1,8 @@
+-- Ajout des champs de contact à la table users
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS phone VARCHAR(20),
+ADD COLUMN IF NOT EXISTS address TEXT,
+ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(20),
+ADD COLUMN IF NOT EXISTS telegram VARCHAR(50),
+ADD COLUMN IF NOT EXISTS facebook VARCHAR(100),
+ADD COLUMN IF NOT EXISTS preferred_contact_method VARCHAR(20);

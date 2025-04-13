@@ -28,6 +28,7 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const messageRoutes = require('./routes/messageRoutes'); // Routes pour la messagerie
 // ✅ Utilisation des routes
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
@@ -44,6 +45,7 @@ app.use('/api/invoices', invoiceRoutes); // Routes pour les factures
 app.use('/api/receipts', receiptRoutes); // Routes pour les reçus
 app.use('/api/profile', profileRoutes); // Routes pour le profil utilisateur
 app.use('/api/admin', adminRoutes); // Routes pour l'administration
+app.use('/api/messages', messageRoutes); // Routes pour la messagerie
 
 
 // ✅ Route par défaut
