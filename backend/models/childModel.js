@@ -63,4 +63,50 @@ const getChildrenByParent = async (user_id) => {
   }
 };
 
-module.exports = { addChild, getChildrenByParent };
+const getChildById = async (id, user_id = null) => {
+  try {
+    // Vérifier si la table children existe
+    const tableCheck = await db.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'children'
+      )
+    `);
+    
+    if (!tableCheck.rows[0].exists) {
+      console.error('La table children n\'existe pas');
+      return null;
+    }
+    
+    // Vérifier si id est valide
+    if (!id || isNaN(parseInt(id))) {
+      console.error('ID enfant invalide:', id);
+      return null;
+    }
+    
+    // Si user_id est fourni, vérifier que l'enfant appartient à l'utilisateur
+    let query = 'SELECT * FROM children WHERE id = $1';
+    let params = [id];
+    
+    if (user_id) {
+      query += ' AND user_id = $2';
+      params.push(user_id);
+    }
+    
+    console.log('Exécution de la requête:', query, 'avec les paramètres:', params);
+    const result = await db.query(query, params);
+    console.log('Résultat de la requête:', result.rows);
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    return result.rows[0];
+  } catch (err) {
+    console.error('Erreur lors de la récupération de l\'enfant:', err);
+    return null;
+  }
+};
+
+module.exports = { addChild, getChildrenByParent, getChildById };

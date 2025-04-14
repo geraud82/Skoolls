@@ -95,11 +95,14 @@ const getEnrollmentsByParent = async (user_id) => {
               cl.name AS class_name, 
               cl.tuition_fee, 
               e.status, 
-              e.created_at
+              e.created_at,
+              cl.school_id,
+              s.name AS school_name
        FROM enrollments e
        JOIN children c ON e.child_id = c.id
        JOIN classes cl ON e.class_id = cl.id
        JOIN users u ON c.user_id = u.id
+       JOIN users s ON cl.school_id = s.id
        WHERE c.user_id = $1
        ORDER BY e.created_at DESC`,
       [parseInt(user_id)]

@@ -24,13 +24,13 @@ async function createTestUser() {
         
         // Ajouter des enfants
         await db.query(
-          'INSERT INTO children (user_id, first_name, last_name, birth_date, gender) VALUES ($1, $2, $3, $4, $5)',
-          [userId, 'Emma', 'Dupont', '2015-05-15', 'F']
+          'INSERT INTO children (user_id, first_name, last_name, birth_date) VALUES ($1, $2, $3, $4)',
+          [userId, 'Emma', 'Dupont', '2015-05-15']
         );
         
         await db.query(
-          'INSERT INTO children (user_id, first_name, last_name, birth_date, gender) VALUES ($1, $2, $3, $4, $5)',
-          [userId, 'Lucas', 'Dupont', '2017-08-22', 'M']
+          'INSERT INTO children (user_id, first_name, last_name, birth_date) VALUES ($1, $2, $3, $4)',
+          [userId, 'Lucas', 'Dupont', '2017-08-22']
         );
         
         console.log('✅ Enfants ajoutés avec succès');
@@ -51,13 +51,13 @@ async function createTestUser() {
       
       // Ajouter des enfants
       await db.query(
-        'INSERT INTO children (user_id, first_name, last_name, birth_date, gender) VALUES ($1, $2, $3, $4, $5)',
-        [userId, 'Emma', 'Dupont', '2015-05-15', 'F']
+        'INSERT INTO children (user_id, first_name, last_name, birth_date) VALUES ($1, $2, $3, $4)',
+        [userId, 'Emma', 'Dupont', '2015-05-15']
       );
       
       await db.query(
-        'INSERT INTO children (user_id, first_name, last_name, birth_date, gender) VALUES ($1, $2, $3, $4, $5)',
-        [userId, 'Lucas', 'Dupont', '2017-08-22', 'M']
+        'INSERT INTO children (user_id, first_name, last_name, birth_date) VALUES ($1, $2, $3, $4)',
+        [userId, 'Lucas', 'Dupont', '2017-08-22']
       );
       
       console.log('✅ Enfants ajoutés avec succès');

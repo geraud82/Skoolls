@@ -1,4 +1,4 @@
-const { addChild, getChildrenByParent } = require('../models/childModel');
+const { addChild, getChildrenByParent, getChildById } = require('../models/childModel');
 const db = require('../config/db');
 
 const createChild = async (req, res) => {
@@ -69,10 +69,30 @@ const deleteChild = async (req, res) => {
   }
 };
 
+const getChild = async (req, res) => {
+  const { id } = req.params;
+  // Ne pas vérifier si l'enfant appartient à l'utilisateur connecté
+  // const user_id = req.user.id;
+
+  try {
+    // Appeler getChildById sans le user_id pour récupérer l'enfant sans vérifier le propriétaire
+    const child = await getChildById(id);
+    
+    if (!child) {
+      return res.status(404).json({ message: "Enfant non trouvé" });
+    }
+    
+    res.json(child);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur lors de la récupération de l'enfant" });
+  }
+};
 
 module.exports = {
   createChild,
   listChildren,
   updateChild,
   deleteChild,
+  getChild,
 };
