@@ -13,10 +13,18 @@ const getClassesBySchoolId = async (req, res) => {
 };
 
 const addClass = async (req, res) => {
-  const { name, tuition_fee } = req.body;
+  const { name, tuition_fee, registration_fee, payment_installments, payment_deadlines, waive_registration_fee_for_returning_students } = req.body;
   const school_id = req.user.id; // récupéré via JWT middleware
   try {
-    const newClass = await createClass({ school_id, name, tuition_fee });
+    const newClass = await createClass({ 
+      school_id, 
+      name, 
+      tuition_fee, 
+      registration_fee, 
+      payment_installments, 
+      payment_deadlines,
+      waive_registration_fee_for_returning_students
+    });
     res.status(201).json(newClass);
   } catch (err) {
     console.error(err);
@@ -72,12 +80,12 @@ const deleteClass = async (req, res) => {
 
 const updateClass = async (req, res) => {
   const classId = req.params.id;
-  const { name, tuition_fee } = req.body;
+  const { name, tuition_fee, registration_fee, payment_installments, payment_deadlines, waive_registration_fee_for_returning_students } = req.body;
 
   try {
     const result = await db.query(
-      'UPDATE classes SET name = $1, tuition_fee = $2 WHERE id = $3 RETURNING *',
-      [name, tuition_fee, classId]
+      'UPDATE classes SET name = $1, tuition_fee = $2, registration_fee = $3, payment_installments = $4, payment_deadlines = $5, waive_registration_fee_for_returning_students = $6 WHERE id = $7 RETURNING *',
+      [name, tuition_fee, registration_fee || 0, payment_installments || '[]', payment_deadlines || '[]', waive_registration_fee_for_returning_students || false, classId]
     );
 
     if (result.rowCount === 0) {

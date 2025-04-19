@@ -1,10 +1,10 @@
 const db = require('../config/db');
 
-const createClass = async ({ school_id, name, tuition_fee }) => {
+const createClass = async ({ school_id, name, tuition_fee, registration_fee, payment_installments, payment_deadlines, waive_registration_fee_for_returning_students }) => {
   try {
     const result = await db.query(
-      'INSERT INTO classes (school_id, name, tuition_fee) VALUES ($1, $2, $3) RETURNING *',
-      [school_id, name, tuition_fee]
+      'INSERT INTO classes (school_id, name, tuition_fee, registration_fee, payment_installments, payment_deadlines, waive_registration_fee_for_returning_students) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [school_id, name, tuition_fee, registration_fee || 0, payment_installments || '[]', payment_deadlines || '[]', waive_registration_fee_for_returning_students || false]
     );
     return result.rows[0];
   } catch (err) {

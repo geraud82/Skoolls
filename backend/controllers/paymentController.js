@@ -272,6 +272,65 @@ const handlePaydunyaCallback = async (req, res) => {
       // Si le paiement est complété, mettre à jour le statut de l'inscription
       if (result.status === 'completed') {
         await updateEnrollmentStatus(payment.enrollment_id, 'paid');
+        
+        // Envoyer une notification à l'école
+        try {
+          // Récupérer les informations de l'inscription
+          const enrollmentInfo = await db.query(
+            `SELECT e.id, 
+                    c.name as class_name, 
+                    c.school_id,
+                    ch.first_name, 
+                    ch.last_name,
+                    CONCAT(ch.first_name, ' ', ch.last_name) AS child_name,
+                    u.name AS parent_name
+             FROM enrollments e
+             JOIN classes c ON e.class_id = c.id
+             JOIN children ch ON e.child_id = ch.id
+             JOIN users u ON ch.user_id = u.id
+             WHERE e.id = $1`,
+            [payment.enrollment_id]
+          );
+          
+          if (enrollmentInfo.rows.length > 0) {
+            const enrollmentData = enrollmentInfo.rows[0];
+            
+            // Récupérer l'ID de l'utilisateur école
+            const schoolUserQuery = await db.query(
+              'SELECT user_id FROM schools WHERE id = $1',
+              [enrollmentData.school_id]
+            );
+            
+            if (schoolUserQuery.rows.length > 0) {
+              const schoolUserId = schoolUserQuery.rows[0].user_id;
+              
+              // Vérifier si la table notifications existe
+              const tableCheck = await db.query(`
+                SELECT EXISTS (
+                  SELECT FROM information_schema.tables 
+                  WHERE table_schema = 'public' 
+                  AND table_name = 'notifications'
+                )
+              `);
+              
+              if (tableCheck.rows[0].exists) {
+                // Créer une notification pour l'école
+                const title = '💰 Paiement reçu';
+                const message = `Un paiement de ${payment.amount} FCFA a été reçu pour l'inscription de ${enrollmentData.child_name} à la classe ${enrollmentData.class_name}.`;
+                
+                await db.query(
+                  'INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3)',
+                  [schoolUserId, title, message]
+                );
+                
+                console.log('✅ Notification de paiement envoyée à l\'école');
+              }
+            }
+          }
+        } catch (notifErr) {
+          console.error('❌ Erreur lors de l\'envoi de la notification de paiement à l\'école:', notifErr);
+          // Ne pas bloquer la réponse en cas d'erreur de notification
+        }
       }
       
       return res.status(200).json({ message: 'Webhook traité avec succès' });
@@ -319,6 +378,65 @@ const checkPaydunyaStatus = async (req, res) => {
       // Si le paiement est complété, mettre à jour le statut de l'inscription
       if (statusResult.status === 'completed') {
         await updateEnrollmentStatus(payment.enrollment_id, 'paid');
+        
+        // Envoyer une notification à l'école
+        try {
+          // Récupérer les informations de l'inscription
+          const enrollmentInfo = await db.query(
+            `SELECT e.id, 
+                    c.name as class_name, 
+                    c.school_id,
+                    ch.first_name, 
+                    ch.last_name,
+                    CONCAT(ch.first_name, ' ', ch.last_name) AS child_name,
+                    u.name AS parent_name
+             FROM enrollments e
+             JOIN classes c ON e.class_id = c.id
+             JOIN children ch ON e.child_id = ch.id
+             JOIN users u ON ch.user_id = u.id
+             WHERE e.id = $1`,
+            [payment.enrollment_id]
+          );
+          
+          if (enrollmentInfo.rows.length > 0) {
+            const enrollmentData = enrollmentInfo.rows[0];
+            
+            // Récupérer l'ID de l'utilisateur école
+            const schoolUserQuery = await db.query(
+              'SELECT user_id FROM schools WHERE id = $1',
+              [enrollmentData.school_id]
+            );
+            
+            if (schoolUserQuery.rows.length > 0) {
+              const schoolUserId = schoolUserQuery.rows[0].user_id;
+              
+              // Vérifier si la table notifications existe
+              const tableCheck = await db.query(`
+                SELECT EXISTS (
+                  SELECT FROM information_schema.tables 
+                  WHERE table_schema = 'public' 
+                  AND table_name = 'notifications'
+                )
+              `);
+              
+              if (tableCheck.rows[0].exists) {
+                // Créer une notification pour l'école
+                const title = '💰 Paiement reçu via PayDunya';
+                const message = `Un paiement de ${payment.amount} FCFA a été reçu pour l'inscription de ${enrollmentData.child_name} à la classe ${enrollmentData.class_name}.`;
+                
+                await db.query(
+                  'INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3)',
+                  [schoolUserId, title, message]
+                );
+                
+                console.log('✅ Notification de paiement PayDunya envoyée à l\'école');
+              }
+            }
+          }
+        } catch (notifErr) {
+          console.error('❌ Erreur lors de l\'envoi de la notification de paiement PayDunya à l\'école:', notifErr);
+          // Ne pas bloquer la réponse en cas d'erreur de notification
+        }
       }
     }
     
@@ -368,6 +486,65 @@ const handleStripeWebhook = async (req, res) => {
         
         // Mettre à jour le statut de l'inscription
         await updateEnrollmentStatus(payment.enrollment_id, 'paid');
+        
+        // Envoyer une notification à l'école
+        try {
+          // Récupérer les informations de l'inscription
+          const enrollmentInfo = await db.query(
+            `SELECT e.id, 
+                    c.name as class_name, 
+                    c.school_id,
+                    ch.first_name, 
+                    ch.last_name,
+                    CONCAT(ch.first_name, ' ', ch.last_name) AS child_name,
+                    u.name AS parent_name
+             FROM enrollments e
+             JOIN classes c ON e.class_id = c.id
+             JOIN children ch ON e.child_id = ch.id
+             JOIN users u ON ch.user_id = u.id
+             WHERE e.id = $1`,
+            [payment.enrollment_id]
+          );
+          
+          if (enrollmentInfo.rows.length > 0) {
+            const enrollmentData = enrollmentInfo.rows[0];
+            
+            // Récupérer l'ID de l'utilisateur école
+            const schoolUserQuery = await db.query(
+              'SELECT user_id FROM schools WHERE id = $1',
+              [enrollmentData.school_id]
+            );
+            
+            if (schoolUserQuery.rows.length > 0) {
+              const schoolUserId = schoolUserQuery.rows[0].user_id;
+              
+              // Vérifier si la table notifications existe
+              const tableCheck = await db.query(`
+                SELECT EXISTS (
+                  SELECT FROM information_schema.tables 
+                  WHERE table_schema = 'public' 
+                  AND table_name = 'notifications'
+                )
+              `);
+              
+              if (tableCheck.rows[0].exists) {
+                // Créer une notification pour l'école
+                const title = '💰 Paiement reçu via Stripe';
+                const message = `Un paiement de ${payment.amount} FCFA a été reçu pour l'inscription de ${enrollmentData.child_name} à la classe ${enrollmentData.class_name}.`;
+                
+                await db.query(
+                  'INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3)',
+                  [schoolUserId, title, message]
+                );
+                
+                console.log('✅ Notification de paiement Stripe envoyée à l\'école');
+              }
+            }
+          }
+        } catch (notifErr) {
+          console.error('❌ Erreur lors de l\'envoi de la notification de paiement Stripe à l\'école:', notifErr);
+          // Ne pas bloquer la réponse en cas d'erreur de notification
+        }
       }
       
       return res.status(200).json({ received: true });
@@ -411,6 +588,65 @@ const handleFlutterwaveWebhook = async (req, res) => {
       // Si le paiement est réussi, mettre à jour le statut de l'inscription
       if (result.status === 'successful') {
         await updateEnrollmentStatus(payment.enrollment_id, 'paid');
+        
+        // Envoyer une notification à l'école
+        try {
+          // Récupérer les informations de l'inscription
+          const enrollmentInfo = await db.query(
+            `SELECT e.id, 
+                    c.name as class_name, 
+                    c.school_id,
+                    ch.first_name, 
+                    ch.last_name,
+                    CONCAT(ch.first_name, ' ', ch.last_name) AS child_name,
+                    u.name AS parent_name
+             FROM enrollments e
+             JOIN classes c ON e.class_id = c.id
+             JOIN children ch ON e.child_id = ch.id
+             JOIN users u ON ch.user_id = u.id
+             WHERE e.id = $1`,
+            [payment.enrollment_id]
+          );
+          
+          if (enrollmentInfo.rows.length > 0) {
+            const enrollmentData = enrollmentInfo.rows[0];
+            
+            // Récupérer l'ID de l'utilisateur école
+            const schoolUserQuery = await db.query(
+              'SELECT user_id FROM schools WHERE id = $1',
+              [enrollmentData.school_id]
+            );
+            
+            if (schoolUserQuery.rows.length > 0) {
+              const schoolUserId = schoolUserQuery.rows[0].user_id;
+              
+              // Vérifier si la table notifications existe
+              const tableCheck = await db.query(`
+                SELECT EXISTS (
+                  SELECT FROM information_schema.tables 
+                  WHERE table_schema = 'public' 
+                  AND table_name = 'notifications'
+                )
+              `);
+              
+              if (tableCheck.rows[0].exists) {
+                // Créer une notification pour l'école
+                const title = '💰 Paiement reçu via Flutterwave';
+                const message = `Un paiement de ${payment.amount} FCFA a été reçu pour l'inscription de ${enrollmentData.child_name} à la classe ${enrollmentData.class_name}.`;
+                
+                await db.query(
+                  'INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3)',
+                  [schoolUserId, title, message]
+                );
+                
+                console.log('✅ Notification de paiement Flutterwave envoyée à l\'école');
+              }
+            }
+          }
+        } catch (notifErr) {
+          console.error('❌ Erreur lors de l\'envoi de la notification de paiement Flutterwave à l\'école:', notifErr);
+          // Ne pas bloquer la réponse en cas d'erreur de notification
+        }
       }
       
       return res.status(200).json({ message: 'Webhook traité avec succès' });
@@ -458,6 +694,65 @@ const checkStripeStatus = async (req, res) => {
       // Si le paiement est complété, mettre à jour le statut de l'inscription
       if (statusResult.status === 'paid') {
         await updateEnrollmentStatus(payment.enrollment_id, 'paid');
+        
+        // Envoyer une notification à l'école
+        try {
+          // Récupérer les informations de l'inscription
+          const enrollmentInfo = await db.query(
+            `SELECT e.id, 
+                    c.name as class_name, 
+                    c.school_id,
+                    ch.first_name, 
+                    ch.last_name,
+                    CONCAT(ch.first_name, ' ', ch.last_name) AS child_name,
+                    u.name AS parent_name
+             FROM enrollments e
+             JOIN classes c ON e.class_id = c.id
+             JOIN children ch ON e.child_id = ch.id
+             JOIN users u ON ch.user_id = u.id
+             WHERE e.id = $1`,
+            [payment.enrollment_id]
+          );
+          
+          if (enrollmentInfo.rows.length > 0) {
+            const enrollmentData = enrollmentInfo.rows[0];
+            
+            // Récupérer l'ID de l'utilisateur école
+            const schoolUserQuery = await db.query(
+              'SELECT user_id FROM schools WHERE id = $1',
+              [enrollmentData.school_id]
+            );
+            
+            if (schoolUserQuery.rows.length > 0) {
+              const schoolUserId = schoolUserQuery.rows[0].user_id;
+              
+              // Vérifier si la table notifications existe
+              const tableCheck = await db.query(`
+                SELECT EXISTS (
+                  SELECT FROM information_schema.tables 
+                  WHERE table_schema = 'public' 
+                  AND table_name = 'notifications'
+                )
+              `);
+              
+              if (tableCheck.rows[0].exists) {
+                // Créer une notification pour l'école
+                const title = '💰 Paiement reçu via Stripe';
+                const message = `Un paiement de ${payment.amount} FCFA a été reçu pour l'inscription de ${enrollmentData.child_name} à la classe ${enrollmentData.class_name}.`;
+                
+                await db.query(
+                  'INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3)',
+                  [schoolUserId, title, message]
+                );
+                
+                console.log('✅ Notification de paiement Stripe envoyée à l\'école');
+              }
+            }
+          }
+        } catch (notifErr) {
+          console.error('❌ Erreur lors de l\'envoi de la notification de paiement Stripe à l\'école:', notifErr);
+          // Ne pas bloquer la réponse en cas d'erreur de notification
+        }
       }
     }
     
@@ -511,6 +806,65 @@ const checkFlutterwaveStatus = async (req, res) => {
       // Si le paiement est complété, mettre à jour le statut de l'inscription
       if (statusResult.status === 'successful') {
         await updateEnrollmentStatus(payment.enrollment_id, 'paid');
+        
+        // Envoyer une notification à l'école
+        try {
+          // Récupérer les informations de l'inscription
+          const enrollmentInfo = await db.query(
+            `SELECT e.id, 
+                    c.name as class_name, 
+                    c.school_id,
+                    ch.first_name, 
+                    ch.last_name,
+                    CONCAT(ch.first_name, ' ', ch.last_name) AS child_name,
+                    u.name AS parent_name
+             FROM enrollments e
+             JOIN classes c ON e.class_id = c.id
+             JOIN children ch ON e.child_id = ch.id
+             JOIN users u ON ch.user_id = u.id
+             WHERE e.id = $1`,
+            [payment.enrollment_id]
+          );
+          
+          if (enrollmentInfo.rows.length > 0) {
+            const enrollmentData = enrollmentInfo.rows[0];
+            
+            // Récupérer l'ID de l'utilisateur école
+            const schoolUserQuery = await db.query(
+              'SELECT user_id FROM schools WHERE id = $1',
+              [enrollmentData.school_id]
+            );
+            
+            if (schoolUserQuery.rows.length > 0) {
+              const schoolUserId = schoolUserQuery.rows[0].user_id;
+              
+              // Vérifier si la table notifications existe
+              const tableCheck = await db.query(`
+                SELECT EXISTS (
+                  SELECT FROM information_schema.tables 
+                  WHERE table_schema = 'public' 
+                  AND table_name = 'notifications'
+                )
+              `);
+              
+              if (tableCheck.rows[0].exists) {
+                // Créer une notification pour l'école
+                const title = '💰 Paiement reçu via Flutterwave';
+                const message = `Un paiement de ${payment.amount} FCFA a été reçu pour l'inscription de ${enrollmentData.child_name} à la classe ${enrollmentData.class_name}.`;
+                
+                await db.query(
+                  'INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3)',
+                  [schoolUserId, title, message]
+                );
+                
+                console.log('✅ Notification de paiement Flutterwave envoyée à l\'école');
+              }
+            }
+          }
+        } catch (notifErr) {
+          console.error('❌ Erreur lors de l\'envoi de la notification de paiement Flutterwave à l\'école:', notifErr);
+          // Ne pas bloquer la réponse en cas d'erreur de notification
+        }
       }
     }
     

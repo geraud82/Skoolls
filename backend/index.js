@@ -29,6 +29,7 @@ const receiptRoutes = require('./routes/receiptRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const messageRoutes = require('./routes/messageRoutes'); // Routes pour la messagerie
+const schoolUserRoutes = require('./routes/schoolUserRoutes'); // Routes pour les utilisateurs d'école
 // ✅ Utilisation des routes
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
@@ -46,6 +47,7 @@ app.use('/api/receipts', receiptRoutes); // Routes pour les reçus
 app.use('/api/profile', profileRoutes); // Routes pour le profil utilisateur
 app.use('/api/admin', adminRoutes); // Routes pour l'administration
 app.use('/api/messages', messageRoutes); // Routes pour la messagerie
+app.use('/api/school-users', schoolUserRoutes); // Routes pour les utilisateurs d'école
 
 
 // ✅ Route par défaut

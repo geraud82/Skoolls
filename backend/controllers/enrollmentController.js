@@ -38,6 +38,7 @@ const createEnrollment = async (req, res) => {
     const result = await db.query(
       `SELECT e.*, 
               c.name as class_name, 
+              c.school_id,
               ch.first_name, 
               ch.last_name,
               CONCAT(ch.first_name, ' ', ch.last_name) AS child_name,
@@ -49,8 +50,47 @@ const createEnrollment = async (req, res) => {
        WHERE e.id = $1`,
       [enrollment.id]
     );
+    
+    const enrollmentData = result.rows[0];
+    
+    // Vérifier si la table notifications existe
+    const tableCheck = await db.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'notifications'
+      )
+    `);
+    
+    if (tableCheck.rows[0].exists) {
+      try {
+        // Récupérer l'ID de l'utilisateur école
+        const schoolUserQuery = await db.query(
+          'SELECT user_id FROM schools WHERE id = $1',
+          [enrollmentData.school_id]
+        );
+        
+        if (schoolUserQuery.rows.length > 0) {
+          const schoolUserId = schoolUserQuery.rows[0].user_id;
+          
+          // Créer une notification pour l'école
+          const title = '🆕 Nouvelle inscription reçue';
+          const message = `${enrollmentData.child_name} a été inscrit(e) à la classe ${enrollmentData.class_name}. Veuillez examiner cette inscription.`;
+          
+          await db.query(
+            'INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3)',
+            [schoolUserId, title, message]
+          );
+          
+          console.log('✅ Notification envoyée à l\'école pour la nouvelle inscription');
+        }
+      } catch (notifErr) {
+        console.error('❌ Erreur lors de l\'envoi de la notification à l\'école:', notifErr);
+        // Ne pas bloquer la réponse en cas d'erreur de notification
+      }
+    }
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(enrollmentData);
   } catch (err) {
     console.error('❌ Erreur lors de la création de l\'inscription:', err);
     
